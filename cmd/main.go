@@ -1,8 +1,9 @@
 package main
 
 import (
-    "flag"
-    "fmt"
+	"flag"
+	"fmt"
+	initproject "github.com/dfd/cli/init_project"
 )
 
 func main() {
@@ -11,7 +12,7 @@ func main() {
 
     switch *commandPtr {
         case "init":
-            fmt.Println("Executing init command...")
+            initproject.InitProject()
         case "run":
             fmt.Println("Executing run command...")
         case "install":
