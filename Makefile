@@ -1,9 +1,11 @@
+null:
+	@go run main.go
 
 run:
-	@go run cmd/main.go -command="run"
+	@go run main.go run
 
 init:
-	@go run cmd/main.go -command="init"
+	@go run main.go init
 
 install:
-	@go run cmd/main.go -command="install"
+	@go run main.go install

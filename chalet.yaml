@@ -1,3 +1,7 @@
-
+name: printscript-ui
 lang: node
-version: 18
+version: latest
+server_port: 5173
+commands:
+  run: npm run dev
+  install: npm install
