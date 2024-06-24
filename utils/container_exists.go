@@ -8,16 +8,20 @@ import (
 )
 
 func CheckDockerContainerExists(config *Config) error {
-	cmd := exec.Command("docker", "ps", "-a", "--filter", fmt.Sprintf("name=^chalet-%s$", config.Name), "--format", "{{.Names}}")
-	var out bytes.Buffer
-	cmd.Stdout = &out
-	err := cmd.Run()
+	containerName := fmt.Sprintf("chalet-%s", config.Name)
+
+	// Check if the container exists
+	existsCmd := exec.Command("docker", "ps", "-a", "--filter", fmt.Sprintf("name=^%s$", containerName), "--format", "{{.Names}}")
+	var existsOut bytes.Buffer
+	existsCmd.Stdout = &existsOut
+	err := existsCmd.Run()
 	if err != nil {
 		fmt.Println("Error running Docker command:", err)
 		return err
 	}
 
-	if !bytes.Contains(out.Bytes(), []byte(config.Name)) {
+	if !bytes.Contains(existsOut.Bytes(), []byte(containerName)) {
+		// If the container does not exist, create and start it
 		err = createContainer(config)
 		if err != nil {
 			return err
@@ -26,6 +30,24 @@ func CheckDockerContainerExists(config *Config) error {
 		if err != nil {
 			return err
 		}
+	} else {
+		// Check if the container is running
+		runningCmd := exec.Command("docker", "ps", "--filter", fmt.Sprintf("name=^%s$", containerName), "--format", "{{.Names}}")
+		var runningOut bytes.Buffer
+		runningCmd.Stdout = &runningOut
+		err := runningCmd.Run()
+		if err != nil {
+			fmt.Println("Error running Docker command:", err)
+			return err
+		}
+
+		if !bytes.Contains(runningOut.Bytes(), []byte(containerName)) {
+			// If the container exists but is not running, start it
+			err = startContainer(config)
+			if err != nil {
+				return err
+			}
+		}
 	}
 	return nil
 }
@@ -33,7 +55,10 @@ func CheckDockerContainerExists(config *Config) error {
 func createContainer(config *Config) error {
 	fmt.Println("Creating container...")
 	cwd, err := os.Getwd()
-	cmd := exec.Command("docker", "create", "-it", "-v", fmt.Sprintf("%s:/app", cwd), "-p", fmt.Sprintf("7300:%d", config.ServerPort), "--name", fmt.Sprintf("chalet-%s", config.Name), fmt.Sprintf("%s:%s", config.Lang, config.Version))
+	if err != nil {
+		return err
+	}
+	cmd := exec.Command("docker", "create", "-it", "-v", fmt.Sprintf("%s:/app", cwd), "-p", fmt.Sprintf("7300:%s", config.ServerPort), "--name", fmt.Sprintf("chalet-%s", config.Name), fmt.Sprintf("%s:%s", config.Lang, config.Version))
 	var out bytes.Buffer
 	var stderr bytes.Buffer
 	cmd.Stdout = &out

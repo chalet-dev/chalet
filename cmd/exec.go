@@ -79,7 +79,7 @@ func execCommand(config *utils.Config, args string) error {
 		fmt.Println("Executing", command, "...")
 		commandToRun = args
 	}
-	cmdArgs := []string{"exec", config.Name, "sh", "-c", fmt.Sprintf("cd app && %s", commandToRun)}
+	cmdArgs := []string{"exec", fmt.Sprintf("chalet-%s", config.Name), "sh", "-c", fmt.Sprintf("cd app && %s", commandToRun)}
 	cmd := exec.Command("docker", cmdArgs...)
 
 	var stderr bytes.Buffer
