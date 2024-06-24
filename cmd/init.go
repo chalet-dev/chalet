@@ -40,7 +40,6 @@ func init() {
 }
 
 func initProject() {
-	// Define the content to write
 	config := utils.Config{
 		Name:    "",
 		Lang:    "",
