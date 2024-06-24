@@ -41,10 +41,11 @@ func run() {
 	config, err := utils.ReadConfig()
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
-	exists := utils.CheckDockerContainerExists(config.Name)
-	if !exists {
-		fmt.Println("Container doesn't exist! Run chalet install to start the container")
+	err = utils.CheckDockerContainerExists(config)
+	if err != nil {
+		fmt.Println(err)
 		return
 	}
 	err = runCommand(config)

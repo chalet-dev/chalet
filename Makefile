@@ -1,14 +1,29 @@
+# Variables
+MAIN_GO := main.go
+OUTPUT_BINARY := chalet
+
+# Default target
+.PHONY: null
 null:
-	@go run main.go
+	@go run $(MAIN_GO)
 
+# Run target
+.PHONY: run
 run:
-	@go run main.go run
+	@go run $(MAIN_GO) run
 
+# Init target
+.PHONY: init
 init:
-	@go run main.go init
+	@go run $(MAIN_GO) init
 
-install:
-	@go run main.go install
+# Exec target with arguments
+.PHONY: exec
+exec:
+	@$(eval CMD=$(filter-out $@,$(MAKECMDGOALS)))
+	@go run $(MAIN_GO) exec $(CMD)
 
+# Build target
+.PHONY: build
 build:
-	@go build -o chalet
+	@go build -o $(OUTPUT_BINARY)

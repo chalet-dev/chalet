@@ -46,8 +46,7 @@ func initProject() {
 		Lang:    "",
 		Version: "",
 		Commands: utils.Command{
-			Run:     "",
-			Install: "",
+			Run: "",
 		},
 	}
 

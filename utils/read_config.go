@@ -8,16 +8,16 @@ import (
 )
 
 type Command struct {
-	Run     string `yaml:"run"`
-	Install string `yaml:"install"`
+	Run string `yaml:"run"`
 }
 
 type Config struct {
-	Name       string  `yaml:"name"`
-	Lang       string  `yaml:"lang"`
-	Version    string  `yaml:"version"`
-	ServerPort int     `yaml:"server_port"`
-	Commands   Command `yaml:"commands"`
+	Name           string            `yaml:"name"`
+	Lang           string            `yaml:"lang"`
+	Version        string            `yaml:"version"`
+	ServerPort     int               `yaml:"server_port"`
+	Commands       Command           `yaml:"commands"`
+	CustomCommands map[string]string `yaml:"custom_commands"`
 }
 
 func ReadConfig() (*Config, error) {
