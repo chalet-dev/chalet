@@ -8,7 +8,7 @@ import (
 )
 
 func CheckDockerContainerExists(config *Config) error {
-	cmd := exec.Command("docker", "ps", "-a", "--filter", fmt.Sprintf("name=^%s$", config.Name), "--format", "{{.Names}}")
+	cmd := exec.Command("docker", "ps", "-a", "--filter", fmt.Sprintf("name=^chalet-%s$", config.Name), "--format", "{{.Names}}")
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	err := cmd.Run()
@@ -33,7 +33,7 @@ func CheckDockerContainerExists(config *Config) error {
 func createContainer(config *Config) error {
 	fmt.Println("Creating container...")
 	cwd, err := os.Getwd()
-	cmd := exec.Command("docker", "create", "-it", "-v", fmt.Sprintf("%s:/app", cwd), "-p", fmt.Sprintf("7300:%d", config.ServerPort), "--name", config.Name, fmt.Sprintf("%s:%s", config.Lang, config.Version))
+	cmd := exec.Command("docker", "create", "-it", "-v", fmt.Sprintf("%s:/app", cwd), "-p", fmt.Sprintf("7300:%d", config.ServerPort), "--name", fmt.Sprintf("chalet-%s", config.Name), fmt.Sprintf("%s:%s", config.Lang, config.Version))
 	var out bytes.Buffer
 	var stderr bytes.Buffer
 	cmd.Stdout = &out
@@ -49,7 +49,7 @@ func createContainer(config *Config) error {
 
 func startContainer(config *Config) error {
 	fmt.Println("Starting container...")
-	cmd := exec.Command("docker", "start", config.Name)
+	cmd := exec.Command("docker", "start", fmt.Sprintf("chalet-%s", config.Name))
 	err := cmd.Run()
 	if err != nil {
 		return err
