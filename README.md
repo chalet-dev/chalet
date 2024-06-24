@@ -2,7 +2,7 @@
 
 ## REPO IS UNDER CONSTRUCTION
 
-Welcome to Chalet! This repository provides a streamlined way to set up and manage development environments
+Welcome to Chalet! Provides a streamlined way to set up and manage development environments
 using Docker containers. With Chalet, you can run all your development tools, languages, and applications
 in isolated containers, eliminating the need to install any languages or tools directly on your local machine.
 
