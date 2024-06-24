@@ -21,7 +21,7 @@ func InitProject() {
     }
 
     // Open the YAML file
-    file, err := os.Open(cwd + "/DFD.yaml")
+    file, err := os.Open(cwd + "/chalet.yaml")
     if err != nil {
         fmt.Println("Error opening YAML file:", err)
         return
