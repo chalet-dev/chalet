@@ -15,7 +15,8 @@ run:
 # Init target
 .PHONY: init
 init:
-	@go run $(MAIN_GO) init
+	@$(eval CMD=$(filter-out $@,$(MAKECMDGOALS)))
+	@go run $(MAIN_GO) init $(CMD)
 
 # Exec target with arguments
 .PHONY: exec

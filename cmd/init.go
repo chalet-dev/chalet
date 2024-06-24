@@ -21,7 +21,16 @@ var initCmd = &cobra.Command{
 	which will contain the configuration for the project. For example:
 	chalet init`,
 	Run: func(cmd *cobra.Command, args []string) {
-		initProject()
+		config := utils.Config{
+			Name:       cmd.Flag("name").Value.String(),
+			Lang:       cmd.Flag("language").Value.String(),
+			Version:    cmd.Flag("version").Value.String(),
+			ServerPort: cmd.Flag("port").Value.String(),
+			Commands: utils.Command{
+				Run: cmd.Flag("run").Value.String(),
+			},
+		}
+		initProject(config)
 	},
 }
 
@@ -37,18 +46,14 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// initCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	initCmd.Flags().StringP("name", "n", "", "container project name")
+	initCmd.Flags().StringP("language", "l", "", "project language")
+	initCmd.Flags().StringP("version", "", "", "project version")
+	initCmd.Flags().StringP("port", "p", "", "server port")
+	initCmd.Flags().StringP("run", "r", "", "run command")
 }
 
-func initProject() {
-	config := utils.Config{
-		Name:    "",
-		Lang:    "",
-		Version: "",
-		Commands: utils.Command{
-			Run: "",
-		},
-	}
-
+func initProject(config utils.Config) {
 	cmd := exec.Command("docker", "version")
 
 	// Run the command and capture the output
