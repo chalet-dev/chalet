@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"github.com/chalet/cli/utils"
 	"github.com/spf13/cobra"
+	"os"
 	"os/exec"
-	"strings"
 )
 
 // installCmd represents the install command
@@ -43,47 +43,47 @@ func install() {
 	config, err := utils.ReadConfig()
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
-	exists := checkDockerContainerExists(config.Name)
+	exists := utils.CheckDockerContainerExists(config.Name)
 	if !exists {
 		err := createContainer(config)
 		if err != nil {
 			fmt.Println(err)
+			return
 		}
 		err = startContainer(config)
 		if err != nil {
 			fmt.Println(err)
+			return
 		}
 	}
 	err = installDependencies(config)
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
-}
-
-func checkDockerContainerExists(containerName string) bool {
-	cmd := exec.Command("docker", "ps", "-a", "--filter", fmt.Sprintf("name=^%s$", containerName), "--format", "{{.Names}}")
-	var out bytes.Buffer
-	cmd.Stdout = &out
-	err := cmd.Run()
-	if err != nil {
-		fmt.Println("Error running Docker command:", err)
-		return false
-	}
-
-	return bytes.Contains(out.Bytes(), []byte(containerName))
 }
 
 func createContainer(config *utils.Config) error {
-	cmd := exec.Command("docker", "create", "-v", "$(pwd):/app", "-p", fmt.Sprintf("7300:%d", config.ServerPort), "--name", config.Name, fmt.Sprintf("%s:%s", config.Lang, config.Version))
-	err := cmd.Run()
+	fmt.Println("Creating container...")
+	cwd, err := os.Getwd()
+	cmd := exec.Command("docker", "create", "-it", "-v", fmt.Sprintf("%s:/app", cwd), "-p", fmt.Sprintf("7300:%d", config.ServerPort), "--name", config.Name, fmt.Sprintf("%s:%s", config.Lang, config.Version))
+	var out bytes.Buffer
+	var stderr bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &stderr
+	err = cmd.Run()
+
 	if err != nil {
+		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
 		return err
 	}
 	return nil
 }
 
 func startContainer(config *utils.Config) error {
+	fmt.Println("Starting container...")
 	cmd := exec.Command("docker", "start", config.Name)
 	err := cmd.Run()
 	if err != nil {
@@ -93,12 +93,21 @@ func startContainer(config *utils.Config) error {
 }
 
 func installDependencies(config *utils.Config) error {
-	command := fmt.Sprintf("exec -it %s cd app & %s", config.Name, config.Commands.Install)
-	cmd := exec.Command("docker", strings.Split(command, " ")...)
+	fmt.Println("Installing dependencies...")
+
+	cmdArgs := []string{"exec", config.Name, "sh", "-c", fmt.Sprintf("cd app && %s", config.Commands.Install)}
+	cmd := exec.Command("docker", cmdArgs...)
+
+	var out bytes.Buffer
+	var stderr bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &stderr
 	err := cmd.Run()
-	fmt.Println(command)
+
 	if err != nil {
+		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
 		return err
 	}
+	fmt.Println(out.String())
 	return nil
 }

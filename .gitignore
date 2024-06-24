@@ -9,6 +9,7 @@
 *.dylib
 .idea
 .vscode
+chalet
 
 # Test binary, built with `go test -c`
 *.test

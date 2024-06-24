@@ -9,3 +9,6 @@ init:
 
 install:
 	@go run main.go install
+
+build:
+	@go build -o chalet
