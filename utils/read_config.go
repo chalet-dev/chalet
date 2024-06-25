@@ -30,7 +30,7 @@ func ReadConfig() (*Config, error) {
 	}
 
 	// Open the YAML file
-	file, err := os.Open(cwd + "/chalet.yaml")
+	file, err := os.Open(cwd + "/chalet.yml")
 	if err != nil {
 		fmt.Println("Error opening YAML file:", err)
 		return nil, err

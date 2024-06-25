@@ -6,6 +6,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/chalet/cli/logger"
 	"github.com/chalet/cli/utils"
 	"github.com/spf13/cobra"
 	// "os"
@@ -21,7 +22,10 @@ var runCmd = &cobra.Command{
 	Long: `Used to run the server locally on the chalet container. For example:
 npm run dev`,
 	Run: func(cmd *cobra.Command, args []string) {
-		run()
+		err := run()
+		if err != nil {
+			logger.Error(err.Error())
+		}
 	},
 }
 
@@ -39,29 +43,28 @@ func init() {
 	// runCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-func run() {
+func run() error {
 	config, err := utils.ReadConfig()
 	if err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
 	err = utils.CheckDockerContainerExists(config)
 	if err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
 	err = runCommand(config)
 	if err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
+	return nil
 }
 
 func runCommand(config *utils.Config) error {
 	if config.ExposedPort == "" {
-		config.ExposedPort = "7300"
+		config.ExposedPort = config.ServerPort
 	}
-	fmt.Printf("Running dev environment in %s...\n", config.ExposedPort)
+
+	logger.Info(fmt.Sprintf("Running dev environment in %s...\n", config.ExposedPort))
 
 	err := utils.Execute(config.Name, config.Commands.Run)
 	if err != nil {
@@ -69,4 +72,3 @@ func runCommand(config *utils.Config) error {
 	}
 	return nil
 }
-

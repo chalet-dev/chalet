@@ -1,8 +1,9 @@
 package utils
 
 import (
-	"bufio"
+	"errors"
 	"fmt"
+	"github.com/chalet/cli/logger"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -15,7 +16,7 @@ func Execute(name string, command string) error {
 
 	done := make(chan error, 1)
 
-	if err := createLogPipes(cmd, done); err != nil {
+	if err := CreateLogPipes(cmd, done); err != nil {
 		return err
 	}
 
@@ -23,45 +24,11 @@ func Execute(name string, command string) error {
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
 	sig := <-sigChan
-	fmt.Println("Stopping the container...")
 
 	stopErr := StopContainer(name)
 	if stopErr != nil {
-		fmt.Println("Failed to stop container:", stopErr)
-		return stopErr
+		return errors.New("Failed to stop container: " + stopErr.Error())
 	}
-	fmt.Println("Chalet stopped successfully.")
+	logger.Info("Chalet stopped successfully.")
 	return fmt.Errorf("process interrupted by signal: %v", sig)
-}
-
-
-func createLogPipes(cmd *exec.Cmd, done chan error) error {
-	stdoutPipe, err := cmd.StdoutPipe()
-	if err != nil {
-		return fmt.Errorf("error creating stdout pipe: %v", err)
-	}
-	stderrPipe, err := cmd.StderrPipe()
-	if err != nil {
-		return fmt.Errorf("error creating stderr pipe: %v", err)
-	}
-
-	go func() {
-		done <- cmd.Run()
-	}()
-
-	go func() {
-		scanner := bufio.NewScanner(stdoutPipe)
-		for scanner.Scan() {
-			fmt.Println(scanner.Text())
-		}
-	}()
-
-	go func() {
-		scanner := bufio.NewScanner(stderrPipe)
-		for scanner.Scan() {
-			fmt.Println(scanner.Text())
-		}
-	}()
-
-	return nil
 }

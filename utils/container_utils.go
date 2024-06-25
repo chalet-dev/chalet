@@ -2,12 +2,19 @@ package utils
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
+	"github.com/chalet/cli/logger"
 	"os"
 	"os/exec"
 )
 
 func CheckDockerContainerExists(config *Config) error {
+	pullCmd := exec.Command("docker", "pull", fmt.Sprintf("%s:%s", config.Lang, config.Version))
+	done := make(chan error, 1)
+	if err := CreateLogPipes(pullCmd, done); err != nil {
+		return err
+	}
 	containerName := fmt.Sprintf("chalet-%s", config.Name)
 
 	// Check if the container exists
@@ -16,8 +23,7 @@ func CheckDockerContainerExists(config *Config) error {
 	existsCmd.Stdout = &existsOut
 	err := existsCmd.Run()
 	if err != nil {
-		fmt.Println("Error running Docker command:", err)
-		return err
+		return errors.New(fmt.Sprint("error running Docker command:", err))
 	}
 
 	if !bytes.Contains(existsOut.Bytes(), []byte(containerName)) {
@@ -37,8 +43,7 @@ func CheckDockerContainerExists(config *Config) error {
 		runningCmd.Stdout = &runningOut
 		err := runningCmd.Run()
 		if err != nil {
-			fmt.Println("Error running Docker command:", err)
-			return err
+			return errors.New(fmt.Sprint("error running Docker command:", err))
 		}
 
 		if !bytes.Contains(runningOut.Bytes(), []byte(containerName)) {
@@ -53,14 +58,18 @@ func CheckDockerContainerExists(config *Config) error {
 }
 
 func createContainer(config *Config) error {
-	fmt.Println("Creating container...")
+	logger.Info("Creating container...")
 	cwd, err := os.Getwd()
 	if err != nil {
 		return err
 	}
 
 	if config.ExposedPort == "" {
-		config.ExposedPort = "7300"
+		config.ExposedPort = config.ServerPort
+	}
+
+	if config.Version == "" {
+		config.Version = "latest"
 	}
 
 	cmd := exec.Command("docker",
@@ -78,14 +87,13 @@ func createContainer(config *Config) error {
 	err = cmd.Run()
 
 	if err != nil {
-		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
 		return err
 	}
 	return nil
 }
 
 func startContainer(config *Config) error {
-	fmt.Println("Starting container...")
+	logger.Info("Starting container...")
 	cmd := exec.Command("docker", "start", fmt.Sprintf("chalet-%s", config.Name))
 	err := cmd.Run()
 	if err != nil {
@@ -95,7 +103,7 @@ func startContainer(config *Config) error {
 }
 
 func StopContainer(name string) error {
-	fmt.Println("Stopping container...")
+	logger.Info("Stopping container...")
 	cmd := exec.Command("docker", "stop", fmt.Sprintf("chalet-%s", name))
 	return cmd.Run()
 }

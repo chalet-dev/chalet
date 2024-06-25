@@ -5,7 +5,9 @@ Copyright © 2024 Ignacio Chalub <ignaciochalub@gmail.com> & Federico Pochat <fe
 package cmd
 
 import (
+	"errors"
 	"fmt"
+	"github.com/chalet/cli/logger"
 	"github.com/chalet/cli/utils"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
@@ -31,16 +33,19 @@ var initCmd = &cobra.Command{
 				Run: cmd.Flag("run").Value.String(),
 			},
 		}
-		initProject(config)
+		err := initProject(config)
+		if err != nil {
+			logger.Error(err.Error())
+		}
 	},
 }
 
 type configForMarshalling struct {
-	Name       string        `yaml:"name"`
-	Lang       string        `yaml:"lang"`
-	Version    string        `yaml:"version"`
-	ServerPort string        `yaml:"server_port"`
-	Commands   utils.Command `yaml:"commands"`
+	Name           string            `yaml:"name"`
+	Lang           string            `yaml:"lang"`
+	Version        string            `yaml:"version"`
+	ServerPort     string            `yaml:"server_port"`
+	Commands       utils.Command     `yaml:"commands"`
 	CustomCommands map[string]string `yaml:"custom_commands"`
 }
 
@@ -63,67 +68,61 @@ func init() {
 	initCmd.Flags().StringP("run", "r", "", "run command")
 }
 
-func initProject(config utils.Config) {
+func initProject(config utils.Config) error {
 	cmd := exec.Command("docker", "version")
 	output, err := cmd.CombinedOutput()
 
 	if err != nil {
-		fmt.Println("Docker is not installed or not running.")
-		return
+		return errors.New("docker is not installed or not running")
 	}
 
 	if !strings.Contains(string(output), "Server: Docker") {
-		fmt.Println("Docker is installed but the Docker daemon is not running.")
-		return
+		return errors.New("docker is not installed or not running")
 	}
 
 	// Marshal the struct to YAML
 	yamlData, err := yaml.Marshal(&configForMarshalling{
-		Name:       config.Name,
-		Lang:       config.Lang,
-		Version:    config.Version,
-		ServerPort: config.ServerPort,
-		Commands:   config.Commands,
+		Name:           config.Name,
+		Lang:           config.Lang,
+		Version:        config.Version,
+		ServerPort:     config.ServerPort,
+		Commands:       config.Commands,
 		CustomCommands: config.CustomCommands,
 	})
 	if err != nil {
-		fmt.Println("Error marshalling to YAML:", err)
-		return
+		return errors.New(fmt.Sprint("error marshalling to YAML:", err))
 	}
 
 	// Get the current working directory
 	cwd, err := os.Getwd()
 	if err != nil {
-		fmt.Println("Error getting current directory:", err)
-		return
+		return errors.New(fmt.Sprint("error getting current directory:", err))
 	}
 
 	// Define the file path
-	filePath := cwd + "/chalet.yaml"
+	filePath := cwd + "/chalet.yml"
 
 	// Check if the file already exists
 	if _, err := os.Stat(filePath); err == nil {
-		fmt.Println("File already exists")
-		return
+		logger.Warn("File already exists, skipping initialization")
+		return nil
 	} else if !os.IsNotExist(err) {
-		fmt.Println("Error checking file existence:", err)
-		return
+		return errors.New(fmt.Sprint("error checking file existence:", err))
 	}
 
 	// Open the YAML file for writing (create if not exists, truncate if exists)
 	file, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
-		fmt.Println("Error opening chalet config file for writing:", err)
-		return
+		return errors.New(fmt.Sprint("error opening chalet config file for writing:", err))
 	}
 	defer file.Close()
 
 	// Write the YAML data to the file
 	_, err = file.Write(yamlData)
 	if err != nil {
-		fmt.Println("Error writing chalet config file:", err)
-		return
+		return errors.New(fmt.Sprint("error writing chalet config file:", err))
 	}
 
-	fmt.Println("Chalet started successfully")
+	logger.Info("Chalet project initialized successfully")
+	return nil
 }

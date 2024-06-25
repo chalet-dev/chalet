@@ -6,9 +6,10 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/chalet/cli/logger"
 	"github.com/chalet/cli/utils"
-	"strings"
 	"github.com/spf13/cobra"
+	"strings"
 )
 
 // execCmd represents the exec command
@@ -31,7 +32,10 @@ configuration file (chalet.yaml). If it exists, it executes the corresponding co
 If not, it treats the input as a regular shell command and executes it within the container.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		execHandler(args)
+		err := execHandler(args)
+		if err != nil {
+			logger.Error(err.Error())
+		}
 	},
 }
 
@@ -49,28 +53,27 @@ func init() {
 	// execCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-func execHandler(args []string) {
+func execHandler(args []string) error {
 	config, err := utils.ReadConfig()
 	if err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
 
 	err = utils.CheckDockerContainerExists(config)
 	if err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
 
 	err = execCommand(config, strings.Join(args, " "))
 	if err != nil {
-		fmt.Println(err)
+		return err
 	}
 
 	err = utils.StopContainer(config.Name)
 	if err != nil {
-		fmt.Println(err)
+		return err
 	}
+	return nil
 }
 
 // Use the follwoing command to test log streaming"
@@ -78,10 +81,10 @@ func execHandler(args []string) {
 func execCommand(config *utils.Config, args string) error {
 	var commandToRun string
 	if command, exists := config.CustomCommands[args]; exists {
-		fmt.Println("Executing", command, "from chalet.yaml...")
+		logger.Info(fmt.Sprint("Executing", command, "from chalet.yaml..."))
 		commandToRun = command
 	} else {
-		fmt.Println("Executing", args, "...")
+		logger.Info(fmt.Sprint("Executing", command, "..."))
 		commandToRun = args
 	}
 
