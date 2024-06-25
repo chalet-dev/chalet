@@ -11,6 +11,7 @@ import (
 	"gopkg.in/yaml.v2"
 	"os"
 	"os/exec"
+	"strings"
 )
 
 // initCmd represents the init command
@@ -19,7 +20,7 @@ var initCmd = &cobra.Command{
 	Short: "Initialize a new chalet project",
 	Long: `Initializes a new chalet project by creating a chalet.yaml file,
 	which will contain the configuration for the project. For example:
-	chalet init`,
+	chalet init -n project-name`,
 	Run: func(cmd *cobra.Command, args []string) {
 		config := utils.Config{
 			Name:       cmd.Flag("name").Value.String(),
@@ -55,12 +56,15 @@ func init() {
 
 func initProject(config utils.Config) {
 	cmd := exec.Command("docker", "version")
-
-	// Run the command and capture the output
-	_, err := cmd.CombinedOutput()
+	output, err := cmd.CombinedOutput()
 
 	if err != nil {
 		fmt.Println("Docker is not installed or not running.")
+		return
+	}
+
+	if !strings.Contains(string(output), "Server: Docker") {
+		fmt.Println("Docker is installed but the Docker daemon is not running.")
 		return
 	}
 
