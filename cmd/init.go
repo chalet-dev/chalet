@@ -35,6 +35,15 @@ var initCmd = &cobra.Command{
 	},
 }
 
+type configForMarshalling struct {
+	Name       string        `yaml:"name"`
+	Lang       string        `yaml:"lang"`
+	Version    string        `yaml:"version"`
+	ServerPort string        `yaml:"server_port"`
+	Commands   utils.Command `yaml:"commands"`
+	CustomCommands map[string]string `yaml:"custom_commands"`
+}
+
 func init() {
 	rootCmd.AddCommand(initCmd)
 
@@ -75,6 +84,7 @@ func initProject(config utils.Config) {
 		Version:    config.Version,
 		ServerPort: config.ServerPort,
 		Commands:   config.Commands,
+		CustomCommands: config.CustomCommands,
 	})
 	if err != nil {
 		fmt.Println("Error marshalling to YAML:", err)
@@ -116,12 +126,4 @@ func initProject(config utils.Config) {
 	}
 
 	fmt.Println("Chalet started successfully")
-}
-
-type configForMarshalling struct {
-	Name       string        `yaml:"name"`
-	Lang       string        `yaml:"lang"`
-	Version    string        `yaml:"version"`
-	ServerPort string        `yaml:"server_port"`
-	Commands   utils.Command `yaml:"commands"`
 }

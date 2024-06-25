@@ -28,3 +28,7 @@ exec:
 .PHONY: build
 build:
 	@go build -o $(OUTPUT_BINARY)
+
+# make move DEST=~/sandbox/express-dev-docker
+move:
+	@make build && mv -f chalet $(DEST)
