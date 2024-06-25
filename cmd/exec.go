@@ -5,7 +5,7 @@ Copyright © 2024 Ignacio Chalub <ignaciochalub@gmail.com> & Federico Pochat <fe
 package cmd
 
 import (
-	"bytes"
+	"bufio"
 	"fmt"
 	"github.com/chalet/cli/utils"
 	"os/exec"
@@ -76,6 +76,8 @@ func execHandler(args []string) {
 	}
 }
 
+// Use the follwoing command to test log streaming"
+// ./chalet exec 'bash -c "for i in {1..11}; do echo hola; sleep 0.2; done"'
 func execCommand(config *utils.Config, args string) error {
 	var commandToRun string
 	if command, exists := config.CustomCommands[args]; exists {
@@ -88,19 +90,42 @@ func execCommand(config *utils.Config, args string) error {
 	cmdArgs := []string{"exec", fmt.Sprintf("chalet-%s", config.Name), "sh", "-c", fmt.Sprintf("cd app && %s", commandToRun)}
 	cmd := exec.Command("docker", cmdArgs...)
 
-	var out bytes.Buffer
-	var stderr bytes.Buffer
-	cmd.Stdout = &out
-	cmd.Stderr = &stderr
-
-	err := cmd.Run()
-
+	stdoutPipe, err := cmd.StdoutPipe()
 	if err != nil {
-		return fmt.Errorf("failed to run docker command: %v, %s", err, stderr.String())
+		return fmt.Errorf("error creating stdout pipe: %v", err)
+	}
+	stderrPipe, err := cmd.StderrPipe()
+	if err != nil {
+		return fmt.Errorf("error creating stderr pipe: %v", err)
 	}
 
-	fmt.Print("\n")
-	fmt.Println(out.String())
-	
+	// Start the command
+	err = cmd.Start()
+	if err != nil {
+		return fmt.Errorf("failed to start docker command: %v", err)
+	}
+
+	// Use a scanner to read and print stdout
+	go func() {
+		scanner := bufio.NewScanner(stdoutPipe)
+		for scanner.Scan() {
+			fmt.Println(scanner.Text())
+		}
+	}()
+
+	// Use a scanner to read and print stderr
+	go func() {
+		scanner := bufio.NewScanner(stderrPipe)
+		for scanner.Scan() {
+			fmt.Println(scanner.Text())
+		}
+	}()
+
+	// Wait for command to finish
+	err = cmd.Wait()
+	if err != nil {
+		return fmt.Errorf("command finished with error: %v", err)
+	}
+
 	return nil
 }
