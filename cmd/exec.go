@@ -68,7 +68,7 @@ func execHandler(args []string) {
 	err = execCommand(config, strings.Join(args, " "))
 	if err != nil {
 		fmt.Println(err)
-	} 
+	}
 
 	err = utils.StopContainer(config)
 	if err != nil {
@@ -87,7 +87,7 @@ func execCommand(config *utils.Config, args string) error {
 		fmt.Println("Executing", args, "...")
 		commandToRun = args
 	}
-	cmdArgs := []string{"exec", fmt.Sprintf("chalet-%s", config.Name), "sh", "-c", fmt.Sprintf("cd app && %s", commandToRun)}
+	cmdArgs := []string{"exec", fmt.Sprintf("chalet-%s", config.Name), "sh", "-c", fmt.Sprintf("cd /chalet && %s", commandToRun)}
 	cmd := exec.Command("docker", cmdArgs...)
 
 	stdoutPipe, err := cmd.StdoutPipe()

@@ -67,7 +67,7 @@ func runCommand(config *utils.Config) error {
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
-	cmdArgs := []string{"exec", fmt.Sprintf("chalet-%s", config.Name), "sh", "-c", fmt.Sprintf("cd app && %s", config.Commands.Run)}
+	cmdArgs := []string{"exec", fmt.Sprintf("chalet-%s", config.Name), "sh", "-c", fmt.Sprintf("cd /chalet && %s", config.Commands.Run)}
 	cmd := exec.Command("docker", cmdArgs...)
 
 	var stderr bytes.Buffer

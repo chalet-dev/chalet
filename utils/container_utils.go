@@ -66,7 +66,7 @@ func createContainer(config *Config) error {
 	cmd := exec.Command("docker",
 		"create",
 		"-it",
-		"-v", fmt.Sprintf("%s:/app", cwd),
+		"-v", fmt.Sprintf("%s:/chalet", cwd),
 		"-p", fmt.Sprintf("%s:%s", config.ExposedPort, config.ServerPort),
 		"--name", fmt.Sprintf("chalet-%s", config.Name),
 		fmt.Sprintf("%s:%s", config.Lang, config.Version))
