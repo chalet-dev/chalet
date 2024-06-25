@@ -58,15 +58,21 @@ func execHandler(args []string) {
 		fmt.Println(err)
 		return
 	}
+
 	err = utils.CheckDockerContainerExists(config)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
+
 	err = execCommand(config, strings.Join(args, " "))
 	if err != nil {
 		fmt.Println(err)
-		return
+	} 
+
+	err = utils.StopContainer(config)
+	if err != nil {
+		fmt.Println(err)
 	}
 }
 
@@ -76,19 +82,25 @@ func execCommand(config *utils.Config, args string) error {
 		fmt.Println("Executing", command, "from chalet.yaml...")
 		commandToRun = command
 	} else {
-		fmt.Println("Executing", command, "...")
+		fmt.Println("Executing", args, "...")
 		commandToRun = args
 	}
 	cmdArgs := []string{"exec", fmt.Sprintf("chalet-%s", config.Name), "sh", "-c", fmt.Sprintf("cd app && %s", commandToRun)}
 	cmd := exec.Command("docker", cmdArgs...)
 
+	var out bytes.Buffer
 	var stderr bytes.Buffer
+	cmd.Stdout = &out
 	cmd.Stderr = &stderr
+
 	err := cmd.Run()
 
 	if err != nil {
-		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
-		return err
+		return fmt.Errorf("failed to run docker command: %v, %s", err, stderr.String())
 	}
+
+	fmt.Print("\n")
+	fmt.Println(out.String())
+	
 	return nil
 }

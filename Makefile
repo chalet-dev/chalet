@@ -29,6 +29,7 @@ exec:
 build:
 	@go build -o $(OUTPUT_BINARY)
 
+# Removes chalet from DEST and mvoes new build
 # make move DEST=~/sandbox/express-dev-docker
 move:
-	@make build && mv -f chalet $(DEST)
+	rm -f $(DEST)/chalet && make build && mv -f chalet $(DEST)
