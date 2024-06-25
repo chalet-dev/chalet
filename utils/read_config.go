@@ -16,6 +16,7 @@ type Config struct {
 	Lang           string            `yaml:"lang"`
 	Version        string            `yaml:"version"`
 	ServerPort     string            `yaml:"server_port"`
+	ExposedPort    string            `yaml:"exposed_port"`
 	Commands       Command           `yaml:"commands"`
 	CustomCommands map[string]string `yaml:"custom_commands"`
 }

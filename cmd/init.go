@@ -69,7 +69,13 @@ func initProject(config utils.Config) {
 	}
 
 	// Marshal the struct to YAML
-	yamlData, err := yaml.Marshal(&config)
+	yamlData, err := yaml.Marshal(&configForMarshalling{
+		Name:       config.Name,
+		Lang:       config.Lang,
+		Version:    config.Version,
+		ServerPort: config.ServerPort,
+		Commands:   config.Commands,
+	})
 	if err != nil {
 		fmt.Println("Error marshalling to YAML:", err)
 		return
@@ -110,4 +116,12 @@ func initProject(config utils.Config) {
 	}
 
 	fmt.Println("Chalet started successfully")
+}
+
+type configForMarshalling struct {
+	Name       string        `yaml:"name"`
+	Lang       string        `yaml:"lang"`
+	Version    string        `yaml:"version"`
+	ServerPort string        `yaml:"server_port"`
+	Commands   utils.Command `yaml:"commands"`
 }

@@ -58,7 +58,10 @@ func run() {
 	}
 }
 func runCommand(config *utils.Config) error {
-	fmt.Println("Running dev environment...")
+	if config.ExposedPort == "" {
+		config.ExposedPort = "7300"
+	}
+	fmt.Println(fmt.Sprintf("Running dev environment in %s...", config.ExposedPort))
 
 	// Create a channel to listen for termination signals
 	sigChan := make(chan os.Signal, 1)

@@ -58,7 +58,19 @@ func createContainer(config *Config) error {
 	if err != nil {
 		return err
 	}
-	cmd := exec.Command("docker", "create", "-it", "-v", fmt.Sprintf("%s:/app", cwd), "-p", fmt.Sprintf("7300:%s", config.ServerPort), "--name", fmt.Sprintf("chalet-%s", config.Name), fmt.Sprintf("%s:%s", config.Lang, config.Version))
+
+	if config.ExposedPort == "" {
+		config.ExposedPort = "7300"
+	}
+
+	cmd := exec.Command("docker",
+		"create",
+		"-it",
+		"-v", fmt.Sprintf("%s:/app", cwd),
+		"-p", fmt.Sprintf("%s:%s", config.ExposedPort, config.ServerPort),
+		"--name", fmt.Sprintf("chalet-%s", config.Name),
+		fmt.Sprintf("%s:%s", config.Lang, config.Version))
+
 	var out bytes.Buffer
 	var stderr bytes.Buffer
 	cmd.Stdout = &out
