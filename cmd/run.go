@@ -5,14 +5,13 @@ Copyright © 2024 Ignacio Chalub <ignaciochalub@gmail.com> & Federico Pochat <fe
 package cmd
 
 import (
-	"bytes"
 	"fmt"
 	"github.com/chalet/cli/utils"
 	"github.com/spf13/cobra"
-	"os"
-	"os/exec"
-	"os/signal"
-	"syscall"
+	// "os"
+	// "os/exec"
+	// "os/signal"
+	// "syscall"
 )
 
 // runCmd represents the run command
@@ -57,46 +56,17 @@ func run() {
 		return
 	}
 }
+
 func runCommand(config *utils.Config) error {
 	if config.ExposedPort == "" {
 		config.ExposedPort = "7300"
 	}
-	fmt.Println(fmt.Sprintf("Running dev environment in %s...", config.ExposedPort))
+	fmt.Printf("Running dev environment in %s...\n", config.ExposedPort)
 
-	// Create a channel to listen for termination signals
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
-
-	cmdArgs := []string{"exec", fmt.Sprintf("chalet-%s", config.Name), "sh", "-c", fmt.Sprintf("cd /chalet && %s", config.Commands.Run)}
-	cmd := exec.Command("docker", cmdArgs...)
-
-	var stderr bytes.Buffer
-	cmd.Stderr = &stderr
-
-	done := make(chan error, 1)
-
-	go func() {
-		done <- cmd.Run()
-	}()
-
-	select {
-	case err := <-done:
-		if err != nil {
-			fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
-			return err
-		}
-		return nil
-	case sig := <-sigChan:
-		fmt.Println("Stopping the container...")
-
-		// Run docker stop
-		stopCmd := exec.Command("docker", "stop", fmt.Sprintf("chalet-%s", config.Name))
-		stopErr := stopCmd.Run()
-		if stopErr != nil {
-			fmt.Println("Failed to stop container:", stopErr)
-			return stopErr
-		}
-		fmt.Println("Chalet stopped successfully.")
-		return fmt.Errorf("process interrupted by signal: %v", sig)
+	err := utils.Execute(config.Name, config.Commands.Run)
+	if err != nil {
+		return err
 	}
+	return nil
 }
+

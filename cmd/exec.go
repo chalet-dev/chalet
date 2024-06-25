@@ -5,12 +5,9 @@ Copyright © 2024 Ignacio Chalub <ignaciochalub@gmail.com> & Federico Pochat <fe
 package cmd
 
 import (
-	"bufio"
 	"fmt"
 	"github.com/chalet/cli/utils"
-	"os/exec"
 	"strings"
-
 	"github.com/spf13/cobra"
 )
 
@@ -70,7 +67,7 @@ func execHandler(args []string) {
 		fmt.Println(err)
 	}
 
-	err = utils.StopContainer(config)
+	err = utils.StopContainer(config.Name)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -87,45 +84,10 @@ func execCommand(config *utils.Config, args string) error {
 		fmt.Println("Executing", args, "...")
 		commandToRun = args
 	}
-	cmdArgs := []string{"exec", fmt.Sprintf("chalet-%s", config.Name), "sh", "-c", fmt.Sprintf("cd /chalet && %s", commandToRun)}
-	cmd := exec.Command("docker", cmdArgs...)
 
-	stdoutPipe, err := cmd.StdoutPipe()
+	err := utils.Execute(config.Name, commandToRun)
 	if err != nil {
-		return fmt.Errorf("error creating stdout pipe: %v", err)
+		return err
 	}
-	stderrPipe, err := cmd.StderrPipe()
-	if err != nil {
-		return fmt.Errorf("error creating stderr pipe: %v", err)
-	}
-
-	// Start the command
-	err = cmd.Start()
-	if err != nil {
-		return fmt.Errorf("failed to start docker command: %v", err)
-	}
-
-	// Use a scanner to read and print stdout
-	go func() {
-		scanner := bufio.NewScanner(stdoutPipe)
-		for scanner.Scan() {
-			fmt.Println(scanner.Text())
-		}
-	}()
-
-	// Use a scanner to read and print stderr
-	go func() {
-		scanner := bufio.NewScanner(stderrPipe)
-		for scanner.Scan() {
-			fmt.Println(scanner.Text())
-		}
-	}()
-
-	// Wait for command to finish
-	err = cmd.Wait()
-	if err != nil {
-		return fmt.Errorf("command finished with error: %v", err)
-	}
-
 	return nil
 }

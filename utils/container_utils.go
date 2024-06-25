@@ -94,8 +94,8 @@ func startContainer(config *Config) error {
 	return nil
 }
 
-func StopContainer(config *Config) error {
+func StopContainer(name string) error {
 	fmt.Println("Stopping container...")
-	cmd := exec.Command("docker", "stop", fmt.Sprintf("chalet-%s", config.Name))
+	cmd := exec.Command("docker", "stop", fmt.Sprintf("chalet-%s", name))
 	return cmd.Run()
 }
