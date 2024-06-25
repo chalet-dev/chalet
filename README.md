@@ -13,13 +13,13 @@ in isolated containers, eliminating the need to install any languages or tools d
 ## Usage
 
 ## Contributing
-We welcome contributions! Please see our CONTRIBUTING.md for details on how to get started.
+We welcome contributions! Please see our [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to get started.
 
 ## Issues and Feedback
 If you encounter any issues or have feedback, please open an issue on GitHub. We appreciate your input and will do our best to address any problems.
 
 ## License
-This project is licensed under the MIT License. See the LICENSE file for more information.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more information.
 
 ## Acknowledgements
 We'd like to thank all the contributors and the open-source community for their invaluable support and contributions.
