@@ -9,10 +9,6 @@ import (
 	"github.com/chalet/cli/logger"
 	"github.com/chalet/cli/utils"
 	"github.com/spf13/cobra"
-	// "os"
-	// "os/exec"
-	// "os/signal"
-	// "syscall"
 )
 
 // runCmd represents the run command
