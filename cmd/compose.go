@@ -39,6 +39,7 @@ func init() {
 }
 
 /*
+	TODO
 	Compose command 
 	1. Get root repository name: network name will be REPONAME_network
 	2. Run app container connecting to the network
