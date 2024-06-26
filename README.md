@@ -68,7 +68,7 @@ If not, it treats the input as a regular shell command and executes it within th
 ### Configuration
 The configuration is set on the `chalet.yml` config file
 
-| Configuration   | Type   | Description                                | Example              | required |
+| Configuration   | Type   | Description                                | Example              | Required |
 |-----------------|--------|--------------------------------------------|----------------------|----------|
 | name            | string | project name                               | example              | yes      |
 | language        | string | project language (docker image name)       | node                 | yes      |
