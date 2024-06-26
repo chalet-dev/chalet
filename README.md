@@ -1,7 +1,7 @@
 # Chalet 🏘️
 
 Welcome to Chalet! Chalet provides a streamlined way to set up and manage development environments
-using Docker containers. With Chalet, you can run all your development tools, languages, and applications
+using containers. With Chalet, you can run all your development tools, languages, and applications
 in isolated containers, eliminating the need to install any languages or tools directly on your local machine.
 
 * **Language Agnostic**: Supports a wide range of programming languages including Python, Node.js, Ruby, Java, and more.
